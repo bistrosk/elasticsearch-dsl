@@ -155,10 +155,11 @@ class Search
     private function initializeSerializer(): void
     {
         if (!static::$serializer instanceof OrderedSerializer) {
+            $customNormalizer = new CustomNormalizer();
             static::$serializer = new OrderedSerializer(
                 [
-                    new CustomReferencedNormalizer(),
-                    new CustomNormalizer(),
+                    new CustomReferencedNormalizer($customNormalizer),
+                    $customNormalizer,
                 ]
             );
         }
