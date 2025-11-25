@@ -12,34 +12,56 @@
 namespace ONGR\ElasticsearchDSL\Serializer\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\CustomNormalizer;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\SerializerAwareInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Normalizer used with referenced normalized objects.
  */
-class CustomReferencedNormalizer extends CustomNormalizer
+class CustomReferencedNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
     private array $references = [];
 
-    /**
-     * {@inheritdoc}
-     */
+    public function __construct(private readonly CustomNormalizer $customNormalizer)
+    {
+    }
+
     public function normalize(
         mixed $object,
         string $format = null,
         array $context = []
     ): array|bool|string|int|float|null|\ArrayObject {
         $object->setReferences($this->references);
-        $data = parent::normalize($object, $format, $context);
+        $data = $this->customNormalizer->normalize($object, $format, $context);
         $this->references = array_merge($this->references, $object->getReferences());
 
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsNormalization($data, $format = null): bool
+    public function supportsNormalization(mixed $data, $format = null, array $context = []): bool
     {
         return $data instanceof AbstractNormalizable;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return $this->customNormalizer->getSupportedTypes($format);
+    }
+
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
+    {
+        return $this->customNormalizer->denormalize($data, $type, $format, $context);
+    }
+
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
+    {
+        return $this->customNormalizer->supportsDenormalization($data, $type, $format, $context);
+    }
+
+    public function setSerializer(SerializerInterface $serializer): void
+    {
+        $this->customNormalizer->setSerializer($serializer);
     }
 }
