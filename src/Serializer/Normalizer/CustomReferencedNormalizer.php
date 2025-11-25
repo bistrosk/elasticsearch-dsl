@@ -55,8 +55,12 @@ class CustomReferencedNormalizer implements NormalizerInterface, DenormalizerInt
         return $this->customNormalizer->denormalize($data, $type, $format, $context);
     }
 
-    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
-    {
+    public function supportsDenormalization(
+        mixed $data,
+        string $type,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         return $this->customNormalizer->supportsDenormalization($data, $type, $format, $context);
     }
 
